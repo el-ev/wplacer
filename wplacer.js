@@ -239,6 +239,7 @@ export class WPlacer {
             case 'linear-rtl': log(this.userInfo.id, this.userInfo.name, "🎨 Painting (Right to Left)..."); break;
             case 'singleColorRandom': log(this.userInfo.id, this.userInfo.name, `🎨 Painting (Random Color)...`); break;
             case 'colorByColor': log(this.userInfo.id, this.userInfo.name, `🎨 Painting (Color by Color)...`); break;
+            case 'monkey': log(this.userInfo.id, this.userInfo.name, `🎨 Painting (Monkey)...`); break;
             default: throw new Error(`Unknown paint method: ${method}`);
         }
 
@@ -288,6 +289,12 @@ export class WPlacer {
                         }
                     }
                     mismatchedPixels = colors.flatMap(color => pixelsByColor[color]);
+                    break;
+                case 'monkey':
+                    for (let i = mismatchedPixels.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [mismatchedPixels[i], mismatchedPixels[j]] = [mismatchedPixels[j], mismatchedPixels[i]];
+                    }
                     break;
             }
 
