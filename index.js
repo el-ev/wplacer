@@ -512,11 +512,15 @@ const diffVer = (v1, v2) => v1.split(".").map(Number).reduce((r, n, i) => r || (
     }
 
     // check for updates
-    const githubPackage = await fetch("https://raw.githubusercontent.com/luluwaffless/wplacer/refs/heads/main/package.json");
-    const githubVersion = (await githubPackage.json()).version;
-    const diff = diffVer(version, githubVersion);
-    if (diff !== 0) console.warn(`${diff < 0 ? "⚠️ Outdated version! Please update using \"git pull\"." : "🤖 Unreleased."}\n  GitHub: ${githubVersion}\n  Local: ${version} (${diff})`);
-    
+        try {
+        const githubPackage = await fetch("https://raw.githubusercontent.com/luluwaffless/wplacer/refs/heads/main/package.json");
+        const githubVersion = (await githubPackage.json()).version;
+        const diff = diffVer(version, githubVersion);
+        if (diff !== 0) console.warn(`${diff < 0 ? "⚠️ Outdated version! Please update using \"git pull\"." : "🤖 Unreleased."}\n  GitHub: ${githubVersion}\n  Local: ${version} (${diff})`);
+    } catch (error) {
+        console.log("⚠️ Could not check for updates.");
+    }
+
     // start server
     const port = Number(process.env.PORT) || 80;
     const host = process.env.HOST || "127.0.0.1";
