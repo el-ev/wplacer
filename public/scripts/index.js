@@ -923,39 +923,31 @@ function renderPaidColorsList(selectedKeys = []) {
         return b;
     };
 
-    const selectAllBtn = makeControl('Select All', 'linear-gradient(180deg,#2b8aef,#1366d6)', () => {
-        keys.forEach(k => selected.add(k));
-        paidColorsList.querySelectorAll('div > button.color-button').forEach(btn => {
-            btn.setAttribute('aria-pressed', 'true');
-            btn.style.outline = '3px solid rgba(255,255,255,0.18)';
-            btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)';
-            const check = btn.parentElement.querySelector('div[aria-hidden]');
-            if (check) { check.style.display = 'flex'; check.setAttribute('aria-hidden', 'false'); }
-        });
-        save();
-    });
-
-    const clearAllBtn = makeControl('Clear All', 'linear-gradient(180deg,#6b7280,#374151)', () => {
-        selected.clear();
-        paidColorsList.querySelectorAll('div > button.color-button').forEach(btn => {
-            btn.setAttribute('aria-pressed', 'false');
-            btn.style.outline = '3px solid transparent';
-            btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
-            const check = btn.parentElement.querySelector('div[aria-hidden]');
-            if (check) { check.style.display = 'none'; check.setAttribute('aria-hidden', 'true'); }
-        });
-        save();
-    });
-
-    controlBar.appendChild(selectAllBtn);
-    controlBar.appendChild(clearAllBtn);
-
-    // Wire legacy small controls to new behavior
     if (selectAllPaidColors) {
-        selectAllPaidColors.onclick = () => selectAllBtn.click();
+        selectAllPaidColors.onclick = () => {
+            keys.forEach(k => selected.add(k));
+            paidColorsList.querySelectorAll('div > button.color-button').forEach(btn => {
+                btn.setAttribute('aria-pressed', 'true');
+                btn.style.outline = '3px solid rgba(255,255,255,0.18)';
+                btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)';
+                const check = btn.parentElement.querySelector('div[aria-hidden]');
+                if (check) { check.style.display = 'flex'; check.setAttribute('aria-hidden', 'false'); }
+            });
+            save();
+        };
     }
     if (clearAllPaidColors) {
-        clearAllPaidColors.onclick = () => clearAllBtn.click();
+        clearAllPaidColors.onclick = () => {
+            selected.clear();
+            paidColorsList.querySelectorAll('div > button.color-button').forEach(btn => {
+                btn.setAttribute('aria-pressed', 'false');
+                btn.style.outline = '3px solid transparent';
+                btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+                const check = btn.parentElement.querySelector('div[aria-hidden]');
+                if (check) { check.style.display = 'none'; check.setAttribute('aria-hidden', 'true'); }
+            });
+            save();
+        };
     }
 
     paidColorsList.appendChild(controlBar);
