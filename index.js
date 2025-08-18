@@ -384,7 +384,26 @@ app.get("/events", (req, res) => {
 
 // frontend endpoints
 app.get("/users", (_, res) => res.json(users));
-app.get("/templates", (_, res) => res.json(templates));
+app.get("/templates", (_, res) => {
+    // Serialize TemplateManager instances to plain objects to avoid circular refs (e.g., Timeout)
+    const serialized = {};
+    for (const id in templates) {
+        const t = templates[id];
+        if (!t) continue;
+        serialized[id] = {
+            name: t.name,
+            template: t.template,
+            coords: t.coords,
+            canBuyCharges: !!t.canBuyCharges,
+            canBuyMaxCharges: !!t.canBuyMaxCharges,
+            antiGriefMode: !!t.antiGriefMode,
+            userIds: Array.isArray(t.userIds) ? t.userIds : [],
+            running: !!t.running,
+            status: t.status
+        };
+    }
+    res.json(serialized);
+});
 app.get('/settings', (_, res) => res.json(currentSettings));
 app.put('/settings', (req, res) => {
     const prevSettings = { ...currentSettings };
@@ -596,7 +615,7 @@ const keepAlive = async () => {
     //     const githubPackage = await fetch("https://raw.githubusercontent.com/luluwaffless/wplacer/refs/heads/main/package.json");
     //     const githubVersion = (await githubPackage.json()).version;
     //     const diff = diffVer(version, githubVersion);
-    //     if (diff !== 0) console.warn(`${diff < 0 ? "⚠️ Outdated version! Please update using \"git pull\"." : "🤖 Unreleased."}\n  GitHub: ${githubVersion}\n  Local: ${version} (${diff})`);
+    //     if (diff !== 0) console.warn(`${diff < 0 ? "⚠️ Outdated version! Please update using "git pull".` : "🤖 Unreleased."}\n  GitHub: ${githubVersion}\n  Local: ${version} (${diff})`);
     // } catch (error) {
     //     console.log("⚠️ Could not check for updates.");
     // }
