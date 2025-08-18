@@ -115,6 +115,18 @@ class TemplateManager {
             }
         }
     }
+    async stop() {
+        this.running = false;
+        this.status = "Stopping...";
+        if (this.activeWplacer) {
+            try {
+                await this.activeWplacer.close();
+            } catch (e) {
+            } finally {
+                this.activeWplacer = null;
+            }
+        }
+    }
     async start() {
         this.running = true;
         this.status = "Started.";
@@ -429,23 +441,34 @@ app.put("/template/edit/:id", async (req, res) => {
 app.put("/template/:id", async (req, res) => {
     if (!req.params.id || !templates[req.params.id]) return res.sendStatus(400);
     const manager = templates[req.params.id];
-    for (const i of Object.keys(req.body)) {
-        if (i === "running") {
-            if (req.body.running && !manager.running) {
+    const body = req.body || {};
+    if (Object.prototype.hasOwnProperty.call(body, 'running')) {
+        const desiredRunning = body.running === true || body.running === 'true' || body.running === 1 || body.running === '1';
+        if (desiredRunning) {
+            if (!manager.running) {
                 try {
                     manager.start();
                 } catch (error) {
                     log(req.params.id, manager.masterName, "Error starting template", error);
-                };
-            } else manager.running = false;
-        } else manager[i] = req.body[i];
-    };
+                }
+            }
+        } else {
+            await manager.stop();
+        }
+        delete body.running;
+    }
+
+    // Apply other properties
+    for (const key of Object.keys(body)) {
+        manager[key] = body[key];
+    }
+
     res.sendStatus(200);
 });
 app.put("/template/restart/:id", async (req, res) => {
     if (!req.params.id || !templates[req.params.id]) return res.sendStatus(400);
     const manager = templates[req.params.id];
-    manager.running = false;
+    await manager.stop();
     setTimeout(() => {
         manager.isFirstRun = true;
         manager.start().catch(error => log(req.params.id, manager.masterName, "Error restarting template", error));

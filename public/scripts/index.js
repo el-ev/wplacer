@@ -540,6 +540,7 @@ const createToggleButton = (template, id, buttonsContainer, statusSpan) => {
             await axios.put(`/template/${id}`, { running: !isRunning });
             template.running = !isRunning;
             const newButton = createToggleButton(template, id, buttonsContainer, statusSpan);
+            statusSpan.textContent = template.running ? " Running" : " Stopped";
             button.replaceWith(newButton);
         } catch (error) {
             handleError(error);
@@ -563,7 +564,15 @@ openManageTemplates.addEventListener("click", () => {
                 template.id = id;
                 template.className = "template";
                 const infoSpan = document.createElement('span');
-                infoSpan.innerHTML = `<b>Template Name:</b> ${t.name}<br><b>Assigned Accounts:</b> ${userListFormatted}<br><b>Coordinates:</b> ${t.coords.join(", ")}<br><b>Buy Max Charge Upgrades:</b> ${t.canBuyMaxCharges ? "Yes" : "No"}<br><b>Buy Extra Charges:</b> ${t.canBuyCharges ? "Yes" : "No"}<br><b>Anti-Grief Mode:</b> ${t.antiGriefMode ? "Yes" : "No"}<br><b class="status-text">Status:</b> ${t.status}`;
+                infoSpan.innerHTML = [
+                    `<b>Template Name:</b> ${t.name}`,
+                    `<b>Assigned Accounts:</b> ${userListFormatted}`,
+                    `<b>Coordinates:</b> ${t.coords.join(", ")}`,
+                    `<b>Buy Max Charge Upgrades:</b> ${t.canBuyMaxCharges ? "Yes" : "No"}`,
+                    `<b>Buy Extra Charges:</b> ${t.canBuyCharges ? "Yes" : "No"}`,
+                    `<b>Anti-Grief Mode:</b> ${t.antiGriefMode ? "Yes" : "No"}`,
+                    `<b>Status:</b> <a class="status-text">${t.status}</a>`
+                ].join('<br>');
                 template.appendChild(infoSpan);
 
                 const canvas = document.createElement("canvas");

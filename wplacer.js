@@ -36,7 +36,6 @@ export const log = async (id, name, data, error) => {
 };
 export class WPlacer {
     constructor(template, coords, canBuyCharges, requestTokenCallback, settings) {
-        this.status = "Waiting until called to start.";
         this.template = template;
         this.coords = coords;
         this.canBuyCharges = canBuyCharges;

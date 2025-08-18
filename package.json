@@ -12,6 +12,6 @@
     "node-notifier": "^10.0.1",
     "puppeteer": "^24.16.0",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
