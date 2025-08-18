@@ -1,4 +1,14 @@
 @echo off
+
+if /i not "%1" == ":run" (
+    echo Starting in a new window to ensure the script can pause...
+    start "Update Script" cmd /c ""%~f0" :run & pause"
+    goto :eof
+)
+
+shift /1
+
+
 setlocal enabledelayedexpansion
 
 echo Verifying Git Installation...
@@ -6,7 +16,7 @@ git --version >nul 2>&1
 if %errorlevel% equ 0 (
     echo Git found!
     echo.
-    goto :git_pull
+    goto :node_version_check
 )
 
 echo Git not found!
@@ -21,8 +31,7 @@ if %errorlevel% neq 0 (
     echo Please install Git manually at: https://git-scm.com/
     echo Or upgrade to Windows 10 version 1809+ or Windows 11.
     echo.
-    pause
-    exit /b 1
+    goto :final_pause
 )
 
 echo Winget found!
@@ -38,22 +47,104 @@ if %errorlevel% neq 0 (
     echo Installation failed!
     echo Try to install manually at: https://git-scm.com/
     echo.
-    pause
-    exit /b 1
+    goto :final_pause
 )
 
 echo.
 echo Git successfully installed!
 echo.
-echo Git has been installed and PATH updated by winget.
 echo Git has been installed. To use Git, you must restart your command prompt (terminal) for PATH changes to take effect.
 echo After restarting, please run this script again.
 echo.
-pause
-exit /b 0
+goto :final_pause
+
+:node_version_check
+echo Verifying Node.js installation and version...
+node -v >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Node.js not found. It is a required dependency.
+    goto :install_node_prompt
+)
+
+rem  So apparently the previous variable name corrupts the environment because batch is actually worthless
+set "NODE_VERSION_STR="
+for /f "delims=" %%v in ('node -v') do set "NODE_VERSION_STR=%%v"
+
+rem Extract by character position
+set "NODE_MAJOR=!NODE_VERSION_STR:~1,2!"
+set "NODE_MINOR=!NODE_VERSION_STR:~4,2!"
+
+rem Use a safe variable name: VERSION_OK
+set VERSION_OK=0
+if defined NODE_MAJOR (
+    if !NODE_MAJOR! GTR 20 (
+        set VERSION_OK=1
+    ) else if !NODE_MAJOR! EQU 20 (
+        if !NODE_MINOR! GEQ 6 (
+            set VERSION_OK=1
+        )
+    )
+)
+
+if !VERSION_OK! equ 1 goto :version_is_good
+
+echo Your Node.js version (v!NODE_MAJOR!.!NODE_MINOR!.x) is outdated or could not be parsed.
+echo This project requires Node.js v20.6.0 or newer.
+goto :install_node_prompt
+
+:version_is_good
+echo Node.js version is compatible (v!NODE_MAJOR!.!NODE_MINOR!.x found).
+echo.
+goto :git_pull
+
+
+:install_node_prompt
+echo.
+winget --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Winget not found! Cannot install Node.js automatically.
+    echo.
+    echo Please install/upgrade Node.js manually from:
+    echo https://nodejs.org/en/download/current
+    echo.
+    goto :final_pause
+)
+
+echo Winget is available to help.
+set /p "CHOICE=Do you want to install/upgrade Node.js automatically using winget? (Y/N): "
+if /i "!CHOICE!" neq "Y" (
+    echo.
+    echo Action cancelled by user.
+    echo Please install Node.js v20.6.0+ manually to proceed.
+    echo https://nodejs.org/en/download/current
+    echo.
+    goto :final_pause
+)
+
+echo.
+echo Installing/Upgrading Node.js with winget...
+echo This may take a few minutes.
+echo.
+winget install -e --id OpenJS.NodeJS --source winget --accept-package-agreements --accept-source-agreements
+
+if %errorlevel% neq 0 (
+    echo.
+    echo Installation failed!
+    echo Please try to install/upgrade manually from: https://nodejs.org/en/download/current
+    echo.
+    goto :final_pause
+)
+
+echo.
+echo Node.js successfully installed/upgraded!
+echo.
+echo You MUST restart your command prompt (terminal) for PATH changes to take effect.
+echo After restarting, please run this script again to complete the update.
+echo.
+goto :final_pause
+
 
 :git_pull
-
 echo Repository:
 git remote get-url origin 2>nul
 if %errorlevel% neq 0 (
@@ -85,6 +176,22 @@ git pull
 if %errorlevel% equ 0 (
     echo.
     echo Repository updated successfully!
+    
+    if exist package.json (
+        echo.
+        echo Checking for Node.js package updates...
+        npm install
+        
+        if %errorlevel% equ 0 (
+            echo.
+            echo Node.js packages are up to date!
+        ) else (
+            echo.
+            echo Error: 'npm install' failed.
+            echo Please check your Node.js and npm setup. You may need to run 'npm install' manually.
+        )
+    )
+
 ) else (
     echo.
     echo Error updating the repository.
@@ -100,4 +207,7 @@ if %errorlevel% equ 0 (
 :end
 echo.
 echo All done!
-pause
+goto :final_pause
+
+
+:final_pause

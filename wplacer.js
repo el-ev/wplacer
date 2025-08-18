@@ -184,7 +184,7 @@ export class WPlacer {
         const response = await this.post(`https://backend.wplace.live/s0/pixel/${tx}/${ty}`, body);
 
         if (response.data.painted && response.data.painted == body.colors.length) {
-            log(this.userInfo.id, this.userInfo.name, `🎨 Painted ${body.colors.length} pixels on tile ${tx},${ty}.`);
+            log(this.userInfo.id, this.userInfo.name, `🎨 Painted ${body.colors.length} pixels on tile ${tx}, ${ty}.`);
             return { painted: body.colors.length, success: true };
         } else if (response.status === 403 && response.data.error === "refresh") {
             this.token = null;
@@ -229,6 +229,28 @@ export class WPlacer {
         return mismatched;
     }
 
+    _placeTemplate(coords, template) {
+        const [tx, ty, px, py] = coords;
+        const tiles = {};
+        for (let y = 0; y < template.height; y++) {
+            for (let x = 0; x < template.width; x++) {
+                const color = template.data[x][y];
+                if (color === 0) continue;
+                const gx = px + x;
+                const gy = py + y;
+                const tileX = Math.floor(gx / 1000) + tx;
+                const tileY = Math.floor(gy / 1000) + ty;
+                const localX = gx % 1000;
+                const localY = gy % 1000;
+                const key = `${tileX},${tileY}`;
+                if (!tiles[key]) tiles[key] = { colors: [], coords: [] };
+                tiles[key].colors.push(color);
+                tiles[key].coords.push(localX, localY);
+            }
+        }
+        return tiles;
+    }
+
     async paint(method = 'linear') {
         await this.loadUserInfo();
 
@@ -247,8 +269,10 @@ export class WPlacer {
             await this.loadTiles();
             if (!this.token) await this.waitForToken();
 
+
             let mismatchedPixels = this._getMismatchedPixels();
             if (mismatchedPixels.length === 0) return 0;
+
 
             switch (method) {
                 case 'linear-reversed':
@@ -298,35 +322,25 @@ export class WPlacer {
                     break;
             }
 
-            const pixelsToPaint = mismatchedPixels.slice(0, Math.floor(this.userInfo.charges.count));
-            const bodiesByTile = pixelsToPaint.reduce((acc, p) => {
-                const key = `${p.tx}_${p.ty}`;
-                if (!acc[key]) acc[key] = { colors: [], coords: [] };
-                acc[key].colors.push(p.color);
-                acc[key].coords.push(p.px, p.py);
-                return acc;
-            }, {});
+            const bodies = this._placeTemplate(this.coords, this.template);
 
             let totalPainted = 0;
             let needsRetry = false;
-            for (const tileKey in bodiesByTile) {
-                const [tx, ty] = tileKey.split('_').map(Number);
-                const body = { ...bodiesByTile[tileKey], t: this.token };
+            for (const tileKey in bodies) {
+                const [tx, ty] = tileKey.split(',').map(Number);
+                const body = { ...bodies[tileKey], t: this.token };
                 const result = await this._executePaint(tx, ty, body);
 
-                if (result.success) {
-                    totalPainted += result.painted;
-                } else {
+                if (result.success) totalPainted += result.painted;
+                else {
                     needsRetry = true;
                     break;
-                }
-            }
+                };
+            };
 
-            if (!needsRetry) {
-                return totalPainted;
-            }
-        }
-    }
+            if (!needsRetry) return totalPainted;
+        };
+    };
 
     async buyProduct(productId, amount) {
         const response = await this.post(`https://backend.wplace.live/purchase`, { product: { id: productId, amount: amount } });
