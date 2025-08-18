@@ -236,7 +236,7 @@ const resetTemplateForm = () => {
 
 templateForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const isEditMode = !!templateForm.dataset.editId;
 
     if (!isEditMode && (!currentTemplate || currentTemplate.width === 0)) {
@@ -330,7 +330,7 @@ openManageUsers.addEventListener("click", () => {
                     <button class="delete-btn" title="Delete User"><img src="icons/remove.svg"></button>
                     <button class="json-btn" title="Get Raw User Info"><img src="icons/code.svg"></button>
                 </div>`;
-            
+
             user.querySelector('.delete-btn').addEventListener("click", () => {
                 showConfirmation(
                     "Delete User",
@@ -382,7 +382,7 @@ checkUserStatus.addEventListener("click", async () => {
     checkUserStatus.disabled = true;
     checkUserStatus.innerHTML = "Checking...";
     const userElements = Array.from(document.querySelectorAll('.user'));
-    
+
     let totalCurrent = 0;
     let totalMax = 0;
 
@@ -398,7 +398,7 @@ checkUserStatus.addEventListener("click", async () => {
         try {
             const response = await axios.get(`/user/status/${id}`);
             const userInfo = response.data;
-            
+
             const charges = Math.floor(userInfo.charges.count);
             const max = userInfo.charges.max;
             const level = Math.floor(userInfo.level);
@@ -462,7 +462,7 @@ selectAllUsers.addEventListener('click', () => {
 const createToggleButton = (template, id, buttonsContainer, statusSpan) => {
     const button = document.createElement('button');
     const isRunning = template.running;
-    
+
     button.className = isRunning ? 'destructive-button' : 'primary-button';
     button.innerHTML = `<img src="icons/${isRunning ? 'pause' : 'play'}.svg">${isRunning ? 'Stop' : 'Start'} Template`;
 
@@ -502,7 +502,7 @@ openManageTemplates.addEventListener("click", () => {
                 drawTemplate(t.template, canvas);
                 const buttons = document.createElement('div');
                 buttons.className = "template-actions";
-                
+
                 const toggleButton = createToggleButton(t, id, buttons, infoSpan.querySelector('.status-text'));
                 buttons.appendChild(toggleButton);
 

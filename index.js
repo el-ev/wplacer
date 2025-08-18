@@ -93,9 +93,9 @@ class TemplateManager {
         this.isFirstRun = true;
     }
     sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
-    setToken(t) { 
+    setToken(t) {
         this.turnstileToken = t;
-        if (this.activeWplacer) this.activeWplacer.setToken(t); 
+        if (this.activeWplacer) this.activeWplacer.setToken(t);
     }
     async handleUpgrades(wplacer) {
         if (this.canBuyMaxCharges) {
@@ -123,7 +123,7 @@ class TemplateManager {
         while (this.running) {
             if (this.isFirstRun) {
                 log('SYSTEM', 'wplacer', `🚀 Performing initial painting cycle for "${this.name}"...`);
-                
+
                 const userChargeStates = await Promise.all(this.userIds.map(async (userId) => {
                     if (activeBrowserUsers.has(userId)) return { userId, charges: -1 };
                     activeBrowserUsers.add(userId);
@@ -157,7 +157,7 @@ class TemplateManager {
                         await wplacer.paint(currentSettings.drawingMethod);
                         this.turnstileToken = wplacer.token;
                         await this.handleUpgrades(wplacer);
-                        
+
                         if (await wplacer.pixelsLeft() === 0) {
                             this.running = false;
                             break;
@@ -169,7 +169,7 @@ class TemplateManager {
                         this.activeWplacer = null;
                         activeBrowserUsers.delete(userId);
                     }
-                     if (this.running && this.userIds.length > 1) {
+                    if (this.running && this.userIds.length > 1) {
                         log('SYSTEM', 'wplacer', `⏱️ Initial cycle: Waiting ${currentSettings.accountCooldown / 1000} seconds before next user.`);
                         await this.sleep(currentSettings.accountCooldown);
                     }
@@ -227,7 +227,7 @@ class TemplateManager {
                      activeBrowserUsers.delete(userId);
                  }
             }
-            
+
             const readyUsers = userStates.filter(u => u.charges.count >= u.charges.max * currentSettings.chargeThreshold);
             let userToRun = null;
 
@@ -290,7 +290,7 @@ class TemplateManager {
                         }
                     }
                 }
-                
+
                 const minTimeToReady = Math.min(...userStates.map(u => (u.charges.max * currentSettings.chargeThreshold - u.charges.count) * u.cooldownMs));
                 const waitTime = (minTimeToReady > 0 ? minTimeToReady : 60000) + 2000;
                 this.status = `Waiting for charges.`;
@@ -369,7 +369,7 @@ app.post("/user", async (req, res) => {
 });
 app.post("/template", async (req, res) => {
     if (!req.body.templateName || !req.body.template || !req.body.coords || !req.body.userIds || !req.body.userIds.length) return res.sendStatus(400);
-    
+
     const isDuplicateName = Object.values(templates).some(t => t.name === req.body.templateName);
     if (isDuplicateName) {
         return res.status(409).json({ error: "A template with this name already exists." });
@@ -414,7 +414,7 @@ app.put("/template/edit/:id", async (req, res) => {
     manager.canBuyCharges = updatedData.canBuyCharges;
     manager.canBuyMaxCharges = updatedData.canBuyMaxCharges;
     manager.antiGriefMode = updatedData.antiGriefMode;
-    
+
     if (updatedData.template) {
         manager.template = updatedData.template;
     }

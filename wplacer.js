@@ -143,11 +143,11 @@ export class WPlacer {
                     image.onerror = () => resolve(null); // Resolve with null on error
                     image.src = src;
                 }), pallete, `https://backend.wplace.live/files/s0/tiles/${currentTx}/${currentTy}.png?t=${Date.now()}`)
-                .then(tileData => {
-                    if (tileData) {
-                        this.tiles.set(`${currentTx}_${currentTy}`, tileData);
-                    }
-                });
+                    .then(tileData => {
+                        if (tileData) {
+                            this.tiles.set(`${currentTx}_${currentTy}`, tileData);
+                        }
+                    });
                 tilePromises.push(promise);
             }
         }
@@ -195,7 +195,7 @@ export class WPlacer {
             await this.sleep(40000);
             return { painted: 0, success: false, reason: 'ratelimit' };
         } else if (response.status === 429 || (response.data.error && response.data.error.includes("1015"))) {
-             throw new Error("(1015) You are being rate-limited. Please wait a moment and try again.");
+            throw new Error("(1015) You are being rate-limited. Please wait a moment and try again.");
         } else {
             throw Error(`Unexpected response for tile ${tx},${ty}: ${JSON.stringify(response)}`);
         }
@@ -217,8 +217,8 @@ export class WPlacer {
                 const localPy = globalPy % 1000;
 
                 const tile = this.tiles.get(`${targetTx}_${targetTy}`);
-                if (!tile || !tile.data[localPx]) continue; 
-                
+                if (!tile || !tile.data[localPx]) continue;
+
                 const tileColor = tile.data[localPx][localPy];
 
                 if (templateColor !== tileColor) {
@@ -245,10 +245,10 @@ export class WPlacer {
         while (true) {
             await this.loadTiles();
             if (!this.token) await this.waitForToken();
-        
+
             let mismatchedPixels = this._getMismatchedPixels();
             if (mismatchedPixels.length === 0) return 0;
-    
+
             switch (method) {
                 case 'linear-reversed':
                     mismatchedPixels.reverse();
@@ -290,7 +290,7 @@ export class WPlacer {
                     mismatchedPixels = colors.flatMap(color => pixelsByColor[color]);
                     break;
             }
-    
+
             const pixelsToPaint = mismatchedPixels.slice(0, Math.floor(this.userInfo.charges.count));
             const bodiesByTile = pixelsToPaint.reduce((acc, p) => {
                 const key = `${p.tx}_${p.ty}`;
@@ -299,14 +299,14 @@ export class WPlacer {
                 acc[key].coords.push(p.px, p.py);
                 return acc;
             }, {});
-    
+
             let totalPainted = 0;
             let needsRetry = false;
             for (const tileKey in bodiesByTile) {
                 const [tx, ty] = tileKey.split('_').map(Number);
                 const body = { ...bodiesByTile[tileKey], t: this.token };
                 const result = await this._executePaint(tx, ty, body);
-                
+
                 if (result.success) {
                     totalPainted += result.painted;
                 } else {
@@ -336,7 +336,7 @@ export class WPlacer {
             log(this.userInfo.id, this.userInfo.name, purchaseMessage);
             return true;
         } else if (response.status === 429 || (response.data.error && response.data.error.includes("1015"))) {
-             throw new Error("(1015) You are being rate-limited while trying to make a purchase. Please wait.");
+            throw new Error("(1015) You are being rate-limited while trying to make a purchase. Please wait.");
         } else {
             throw Error(`Unexpected response during purchase: ${JSON.stringify(response)}`);
         }
