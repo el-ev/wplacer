@@ -492,7 +492,7 @@ const keepAlive = async () => {
 };
 
 // starting
-const diffVer = (v1, v2) => v1.split(".").map(Number).reduce((r, n, i) => r || (n - v2.split(".")[i]) * (i ? 10 ** (2 - i) : 100), 0);
+// const diffVer = (v1, v2) => v1.split(".").map(Number).reduce((r, n, i) => r || (n - v2.split(".")[i]) * (i ? 10 ** (2 - i) : 100), 0);
 (async () => {
     const version = JSON.parse(readFileSync("package.json", "utf8")).version;
     console.log(`🌐 wplacer by luluwaffless and jinx (${version})`);
@@ -511,15 +511,16 @@ const diffVer = (v1, v2) => v1.split(".").map(Number).reduce((r, n, i) => r || (
         console.log(`✅ Loaded ${Object.keys(templates).length} templates.`);
     }
 
-    // check for updates
-        try {
-        const githubPackage = await fetch("https://raw.githubusercontent.com/luluwaffless/wplacer/refs/heads/main/package.json");
-        const githubVersion = (await githubPackage.json()).version;
-        const diff = diffVer(version, githubVersion);
-        if (diff !== 0) console.warn(`${diff < 0 ? "⚠️ Outdated version! Please update using \"git pull\"." : "🤖 Unreleased."}\n  GitHub: ${githubVersion}\n  Local: ${version} (${diff})`);
-    } catch (error) {
-        console.log("⚠️ Could not check for updates.");
-    }
+    // Disabled because we are on a fork
+    // // check for updates
+    //     try {
+    //     const githubPackage = await fetch("https://raw.githubusercontent.com/luluwaffless/wplacer/refs/heads/main/package.json");
+    //     const githubVersion = (await githubPackage.json()).version;
+    //     const diff = diffVer(version, githubVersion);
+    //     if (diff !== 0) console.warn(`${diff < 0 ? "⚠️ Outdated version! Please update using \"git pull\"." : "🤖 Unreleased."}\n  GitHub: ${githubVersion}\n  Local: ${version} (${diff})`);
+    // } catch (error) {
+    //     console.log("⚠️ Could not check for updates.");
+    // }
 
     // start server
     const port = Number(process.env.PORT) || 80;
