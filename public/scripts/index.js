@@ -429,34 +429,10 @@ checkUserStatus.addEventListener("click", async () => {
     checkUserStatus.disabled = false;
     checkUserStatus.innerHTML = '<img src="icons/check.svg">Check Account Status';
 });
-openAddTemplate.addEventListener("click", () => {
+openAddTemplate.addEventListener("click", async () => {
     resetTemplateForm();
-    userSelectList.innerHTML = "";
-    loadUsers(users => {
-        if (Object.keys(users).length === 0) {
-            userSelectList.innerHTML = "<span>No users added. Please add a user first.</span>";
-            return;
-        }
-        for (const id of Object.keys(users)) {
-            const userDiv = document.createElement('div');
-            userDiv.className = 'user-select-item';
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `user_${id}`;
-            checkbox.name = 'user_checkbox';
-            checkbox.value = id;
-            const label = document.createElement('label');
-            label.htmlFor = `user_${id}`;
-            label.textContent = `${users[id].name} (#${id})`;
-            userDiv.appendChild(checkbox);
-            userDiv.appendChild(label);
-            userSelectList.appendChild(userDiv);
-        }
-    });
+    await populateUserSelectList();
     changeTab(addTemplate);
-});
-selectAllUsers.addEventListener('click', () => {
-    document.querySelectorAll('#userSelectList input[type="checkbox"]').forEach(cb => cb.checked = true);
 });
 
 const createToggleButton = (template, id, buttonsContainer, statusSpan) => {
@@ -509,8 +485,10 @@ openManageTemplates.addEventListener("click", () => {
                 const editButton = document.createElement('button');
                 editButton.className = 'secondary-button';
                 editButton.innerHTML = '<img src="icons/settings.svg">Edit Template';
-                editButton.addEventListener('click', () => {
-                    openAddTemplate.click();
+                editButton.addEventListener('click', async () => {
+                    resetTemplateForm();
+                    changeTab(addTemplate);
+
                     templateFormTitle.textContent = `Edit Template: ${t.name}`;
                     submitTemplate.innerHTML = '<img src="icons/edit.svg">Save Changes';
                     templateForm.dataset.editId = id;
@@ -521,11 +499,7 @@ openManageTemplates.addEventListener("click", () => {
                     canBuyMaxCharges.checked = t.canBuyMaxCharges;
                     antiGriefMode.checked = t.antiGriefMode;
 
-                    document.querySelectorAll('input[name="user_checkbox"]').forEach(cb => {
-                        if (t.userIds.includes(cb.value)) {
-                            cb.checked = true;
-                        }
-                    });
+                    await populateUserSelectList(t.userIds);
                 });
 
                 const delButton = document.createElement('button');
@@ -690,3 +664,72 @@ tx.addEventListener('blur', () => {
         input.value = input.value.replace(/[^0-9]/g, '');
     });
 });
+
+// Populate user selection list for templates (supports preselection)
+async function populateUserSelectList(preselectedIds = []) {
+    // Normalize to strings for comparison with object keys
+    const preselected = new Set(preselectedIds.map(String));
+
+    // Clear current list
+    userSelectList.innerHTML = "";
+
+    // Load users
+    try {
+        const res = await axios.get('/users');
+        const users = res.data || {};
+        const ids = Object.keys(users);
+
+        if (ids.length === 0) {
+            const empty = document.createElement('div');
+            empty.textContent = 'No users available. Add users first.';
+            userSelectList.appendChild(empty);
+            selectAllUsers.checked = false;
+            selectAllUsers.disabled = true;
+            return;
+        }
+
+        selectAllUsers.disabled = false;
+
+        ids.forEach(id => {
+            const u = users[id];
+            const label = document.createElement('label');
+            label.className = 'user-select-item';
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.name = 'user_checkbox';
+            cb.value = id;
+            cb.checked = preselected.size > 0 ? preselected.has(id) : false;
+
+            const text = document.createElement('span');
+            text.textContent = `${u.name} (#${id})`;
+
+            label.appendChild(cb);
+            label.appendChild(text);
+            userSelectList.appendChild(label);
+        });
+
+        // Update select-all based on current state
+        const checkboxes = Array.from(userSelectList.querySelectorAll('input[name="user_checkbox"]'));
+        const updateSelectAllState = () => {
+            const allChecked = checkboxes.length > 0 && checkboxes.every(c => c.checked);
+            const noneChecked = checkboxes.every(c => !c.checked);
+            // Indeterminate when some but not all are checked
+            selectAllUsers.indeterminate = !allChecked && !noneChecked;
+            selectAllUsers.checked = allChecked;
+        };
+
+        // Attach listeners
+        checkboxes.forEach(cb => cb.addEventListener('change', updateSelectAllState));
+        selectAllUsers.onchange = () => {
+            const checked = selectAllUsers.checked;
+            selectAllUsers.indeterminate = false;
+            checkboxes.forEach(c => { c.checked = checked; });
+        };
+
+        // Initialize state
+        updateSelectAllState();
+    } catch (error) {
+        handleError(error);
+    }
+}
