@@ -118,6 +118,7 @@ class TemplateManager {
     stop() {
         // Stop the manager and cancel any pending sleep so the main loop can exit promptly.
         this.running = false;
+        this.status = "Stopping...";
         if (this._sleepTimer) {
             clearTimeout(this._sleepTimer);
             this._sleepTimer = null;
@@ -158,18 +159,6 @@ class TemplateManager {
                 } catch (error) {
                     logUserError(error, wplacer.userInfo.id, wplacer.userInfo.name, "purchase max charge upgrades");
                 }
-            }
-        }
-    }
-    async stop() {
-        this.running = false;
-        this.status = "Stopping...";
-        if (this.activeWplacer) {
-            try {
-                await this.activeWplacer.close();
-            } catch (e) {
-            } finally {
-                this.activeWplacer = null;
             }
         }
     }
@@ -345,7 +334,7 @@ class TemplateManager {
                                 continue;
                             }
                         }
-                    } catch(error) {
+                    } catch (error) {
                         logUserError(error, this.masterId, this.masterName, "attempt to buy pixel charges");
                     } finally {
                         await chargeBuyer.close();
@@ -519,19 +508,22 @@ app.put("/template/:id", async (req, res) => {
                     manager.start();
                 } catch (error) {
                     log(req.params.id, manager.masterName, "Error starting template", error);
-                };
-            } else if (!req.body.running && manager.running) {
-                // Use the new stop() method to interrupt any pending sleep immediately.
-                manager.stop();
+                }
             }
-        } else manager[i] = req.body[i];
-    };
+        } else {
+            manager.stop();
+        }
+        delete body.running;
+    }
+
+    for (const key of Object.keys(body)) {
+        manager[key] = body[key];
+    }
     res.sendStatus(200);
 });
 app.put("/template/restart/:id", async (req, res) => {
     if (!req.params.id || !templates[req.params.id]) return res.sendStatus(400);
     const manager = templates[req.params.id];
-    // Ensure any pending waits are cancelled immediately
     manager.stop();
     setTimeout(() => {
         manager.isFirstRun = true;
