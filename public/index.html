@@ -128,6 +128,16 @@
             <input type="number" id="antiGriefStandby" min="1" value="10">
             <label for="chargeThreshold">Charge Threshold (%)</label>
             <input type="number" id="chargeThreshold" min="1" max="100" value="50">
+
+            <!-- Paid Colors Settings -->
+            <h3>Paid Colors for Template Conversion</h3>
+            <p class="hint">Select which paid colors to include when converting images into templates.</p>
+            <div id="paidColorsActions" class="paid-colors-actions">
+                <button type="button" id="selectAllPaidColors" class="secondary-button"><img src="icons/manageTemplates.svg">Select All</button>
+                <button type="button" id="clearAllPaidColors" class="secondary-button"><img src="icons/remove.svg">Clear All</button>
+            </div>
+            <div id="paidColorsList"></div>
+
             <button onclick="changeTab(main);" class="secondary-button"><img src="icons/return.svg">Return</button>
         </div>
         

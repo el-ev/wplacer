@@ -51,6 +51,9 @@ const messageBoxTitle = $("messageBoxTitle");
 const messageBoxContent = $("messageBoxContent");
 const messageBoxConfirm = $("messageBoxConfirm");
 const messageBoxCancel = $("messageBoxCancel");
+const paidColorsList = $("paidColorsList");
+const selectAllPaidColors = $("selectAllPaidColors");
+const clearAllPaidColors = $("clearAllPaidColors");
 
 // Message Box
 let confirmCallback = null;
@@ -133,15 +136,94 @@ userForm.addEventListener('submit', async (e) => {
 });
 
 // templates
-const colors = { "0,0,0": 1, "60,60,60": 2, "120,120,120": 3, "210,210,210": 4, "255,255,255": 5, "96,0,24": 6, "237,28,36": 7, "255,127,39": 8, "246,170,9": 9, "249,221,59": 10, "255,250,188": 11, "14,185,104": 12, "19,230,123": 13, "135,255,94": 14, "12,129,110": 15, "16,174,166": 16, "19,225,190": 17, "40,80,158": 18, "64,147,228": 19, "96,247,242": 20, "107,80,246": 21, "153,177,251": 22, "120,12,153": 23, "170,56,185": 24, "224,159,249": 25, "203,0,122": 26, "236,31,128": 27, "243,141,169": 28, "104,70,52": 29, "149,104,42": 30, "248,178,119": 31 };
-const colorById = (id) => Object.keys(colors).find(key => colors[key] === id);
+const free_colors = {
+    "0,0,0": { id: 1, name: "Black" },
+    "60,60,60": { id: 2, name: "Dark Gray" },
+    "120,120,120": { id: 3, name: "Gray" },
+    "210,210,210": { id: 4, name: "Light Gray" },
+    "255,255,255": { id: 5, name: "White" },
+    "96,0,24": { id: 6, name: "Deep Red" },
+    "237,28,36": { id: 7, name: "Red" },
+    "255,127,39": { id: 8, name: "Orange" },
+    "246,170,9": { id: 9, name: "Gold" },
+    "249,221,59": { id: 10, name: "Yellow" },
+    "255,250,188": { id: 11, name: "Light Yellow" },
+    "14,185,104": { id: 12, name: "Dark Green" },
+    "19,230,123": { id: 13, name: "Green" },
+    "135,255,94": { id: 14, name: "Light Green" },
+    "12,129,110": { id: 15, name: "Dark Teal" },
+    "16,174,166": { id: 16, name: "Teal" },
+    "19,225,190": { id: 17, name: "Light Teal" },
+    "40,80,158": { id: 18, name: "Dark Blue" },
+    "64,147,228": { id: 19, name: "Blue" },
+    "96,247,242": { id: 20, name: "Cyan" },
+    "107,80,246": { id: 21, name: "Indigo" },
+    "153,177,251": { id: 22, name: "Light Indigo" },
+    "120,12,153": { id: 23, name: "Dark Purple" },
+    "170,56,185": { id: 24, name: "Purple" },
+    "224,159,249": { id: 25, name: "Light Purple" },
+    "203,0,122": { id: 26, name: "Dark Pink" },
+    "236,31,128": { id: 27, name: "Pink" },
+    "243,141,169": { id: 28, name: "Light Pink" },
+    "104,70,52": { id: 29, name: "Dark Brown" },
+    "149,104,42": { id: 30, name: "Brown" },
+    "248,178,119": { id: 31, name: "Beige" },
+};
+const paid_colors = {
+    "170,170,170": { id: 32, name: "Medium Gray" },
+    "165,14,30": { id: 33, name: "Dark Red" },
+    "250,128,114": { id: 34, name: "Light Red" },
+    "228,92,26": { id: 35, name: "Dark Orange" },
+    "214,181,148": { id: 36, name: "Light Tan" },
+    "156,132,49": { id: 37, name: "Dark Goldenrod" },
+    "197,173,49": { id: 38, name: "Goldenrod" },
+    "232,212,95": { id: 39, name: "Light Goldenrod" },
+    "74,107,58": { id: 40, name: "Dark Olive" },
+    "90,148,74": { id: 41, name: "Olive" },
+    "132,197,115": { id: 42, name: "Light Olive" },
+    "15,121,159": { id: 43, name: "Dark Cyan" },
+    "187,250,242": { id: 44, name: "Light Cyan" },
+    "125,199,255": { id: 45, name: "Light Blue" },
+    "77,49,184": { id: 46, name: "Dark Indigo" },
+    "74,66,132": { id: 47, name: "Dark Slate Blue" },
+    "122,113,196": { id: 48, name: "Slate Blue" },
+    "181,174,241": { id: 49, name: "Light Slate Blue" },
+    "219,164,99": { id: 50, name: "Light Brown" },
+    "209,128,81": { id: 51, name: "Dark Beige" },
+    "255,197,165": { id: 52, name: "Light Beige" },
+    "155,82,73": { id: 53, name: "Dark Peach" },
+    "209,128,120": { id: 54, name: "Peach" },
+    "250,182,164": { id: 55, name: "Light Peach" },
+    "123,99,82": { id: 56, name: "Dark Tan" },
+    "156,132,107": { id: 57, name: "Tan" },
+    "51,57,65": { id: 58, name: "Dark Slate" },
+    "109,117,141": { id: 59, name: "Slate" },
+    "179,185,209": { id: 60, name: "Light Slate" },
+    "109,100,63": { id: 61, name: "Dark Stone" },
+    "148,140,107": { id: 62, name: "Stone" },
+    "205,197,158": { id: 63, name: "Light Stone" }
+};
+var colors = { ...free_colors };
+const all_colors = { ...free_colors, ...paid_colors };
+
+const applyPaidPalette = (paidKeys = []) => {
+    const add = Object.fromEntries((paidKeys || []).filter(k => paid_colors[k]).map(k => [k, paid_colors[k]]));
+    colors = { ...free_colors, ...add };
+};
+
+const colorNameById = (id) => {
+    const colorKey = Object.keys(all_colors).find(key => all_colors[key].id === id);
+    if (!colorKey) return `Unknown (${id})`;
+    return (typeof colorNames !== 'undefined' && colorNames[colorKey]) ? colorNames[colorKey] : (all_colors[colorKey]?.name || `Unknown (${colorKey})`);
+};
+const colorById = (id) => Object.keys(all_colors).find(key => all_colors[key].id === id);
 const closest = color => {
     const [tr, tg, tb] = color.split(',').map(Number);
     return colors[Object.keys(colors).reduce((closest, current) => {
         const [cr, cg, cb] = current.split(',').map(Number);
         const [clR, clG, clB] = closest.split(',').map(Number);
         return Math.sqrt(Math.pow(tr - cr, 2) + Math.pow(tg - cg, 2) + Math.pow(tb - cb, 2)) < Math.sqrt(Math.pow(tr - clR, 2) + Math.pow(tg - clG, 2) + Math.pow(tb - clB, 2)) ? current : closest;
-    })];
+    })].id;
 };
 const drawTemplate = (template, canvas) => {
     canvas.width = template.width;
@@ -154,7 +236,12 @@ const drawTemplate = (template, canvas) => {
             const color = template.data[x][y];
             if (color === 0) continue;
             const i = (y * template.width + x) * 4;
-            const [r, g, b] = colorById(color).split(',').map(Number);
+            const key = colorById(color);
+            if (!key) {
+                // Unknown color ID; skip drawing this pixel gracefully
+                continue;
+            }
+            const [r, g, b] = key.split(',').map(Number);
             imageData.data[i] = r;
             imageData.data[i + 1] = g;
             imageData.data[i + 2] = b;
@@ -432,6 +519,12 @@ checkUserStatus.addEventListener("click", async () => {
 openAddTemplate.addEventListener("click", async () => {
     resetTemplateForm();
     await populateUserSelectList();
+    try {
+        const { data } = await axios.get('/settings');
+        applyPaidPalette(data.paidPalette || []);
+    } catch (e) {
+        // ignore, keep free palette
+    }
     changeTab(addTemplate);
 });
 
@@ -448,7 +541,6 @@ const createToggleButton = (template, id, buttonsContainer, statusSpan) => {
             template.running = !isRunning;
             const newButton = createToggleButton(template, id, buttonsContainer, statusSpan);
             button.replaceWith(newButton);
-            statusSpan.textContent = `Status: ${!isRunning ? 'Started' : 'Stopped'}`;
         } catch (error) {
             handleError(error);
         }
@@ -540,6 +632,7 @@ openSettings.addEventListener("click", async () => {
         dropletReserve.value = currentSettings.dropletReserve;
         antiGriefStandby.value = currentSettings.antiGriefStandby / 60000;
         chargeThreshold.value = currentSettings.chargeThreshold * 100;
+        renderPaidColorsList(currentSettings.paidPalette || []);
     } catch (error) {
         handleError(error);
     }
@@ -634,6 +727,210 @@ chargeThreshold.addEventListener('change', async () => {
         handleError(error);
     }
 });
+
+function renderPaidColorsList(selectedKeys = []) {
+    if (!paidColorsList) return;
+    paidColorsList.innerHTML = '';
+    const selected = new Set(selectedKeys.map(String));
+    const keys = Object.keys(paid_colors);
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexWrap = 'wrap';
+    container.style.gap = '8px';
+    paidColorsList.appendChild(container);
+
+    const calcTextColor = (r, g, b) => {
+        // perceptual luminance -> pick black or white for contrast
+        return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#000' : '#fff';
+    };
+
+    const createColorButton = (key) => {
+        const data = paid_colors[key];
+        const [r, g, b] = key.split(',').map(Number);
+
+        // wrapper to allow absolute positioned checkmark
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.width = '120px';
+        wrapper.style.height = '56px';
+        wrapper.style.flex = '0 0 auto';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'color-button';
+        btn.dataset.key = key;
+        btn.setAttribute('aria-pressed', selected.has(key) ? 'true' : 'false');
+
+        // compact visual styles, system font (larger, more neutral)
+        btn.style.width = '100%';
+        btn.style.height = '100%';
+        btn.style.border = '1px solid rgba(0,0,0,0.08)';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        btn.style.display = 'flex';
+        btn.style.flexDirection = 'column';
+        btn.style.justifyContent = 'center';
+        btn.style.alignItems = 'flex-start';
+        btn.style.padding = '8px 10px';
+        btn.style.background = `linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.04)), rgb(${key})`;
+        btn.style.color = calcTextColor(r, g, b);
+        // Changed font to neutral system UI and slightly larger, lighter weight
+        btn.style.fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial';
+        btn.style.fontWeight = '500';
+        btn.style.fontSize = '13px';
+        btn.style.lineHeight = '1.1';
+        btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+        btn.style.transition = 'transform .12s ease, box-shadow .12s ease, outline-color .12s ease';
+
+        // subtle hover/active
+        btn.addEventListener('mouseenter', () => btn.style.transform = 'translateY(-2px)');
+        btn.addEventListener('mouseleave', () => btn.style.transform = 'none');
+        btn.addEventListener('mousedown', () => btn.style.transform = 'translateY(0)');
+        btn.addEventListener('mouseup', () => btn.style.transform = 'translateY(-2px)');
+
+        // contents (only show color name — no rgb code)
+        const topRow = document.createElement('div');
+        topRow.style.display = 'flex';
+        topRow.style.justifyContent = 'flex-start';
+        topRow.style.width = '100%';
+        topRow.style.alignItems = 'center';
+
+        const nameSpan = document.createElement('div');
+        nameSpan.textContent = data.name;
+        nameSpan.style.textShadow = '0 1px 0 rgba(0,0,0,0.2)';
+        nameSpan.style.fontSize = '13px';
+        nameSpan.style.fontWeight = '500';
+
+        topRow.appendChild(nameSpan);
+        btn.appendChild(topRow);
+
+        // checkmark overlay for selection clarity
+        const check = document.createElement('div');
+        check.style.position = 'absolute';
+        check.style.top = '6px';
+        check.style.right = '6px';
+        check.style.width = '22px';
+        check.style.height = '22px';
+        check.style.borderRadius = '50%';
+        check.style.display = selected.has(key) ? 'flex' : 'none';
+        check.style.alignItems = 'center';
+        check.style.justifyContent = 'center';
+        check.style.boxShadow = '0 2px 6px rgba(0,0,0,0.25)';
+        check.style.background = 'rgba(0,0,0,0.18)';
+        check.style.color = '#fff';
+        check.style.fontSize = '14px';
+        check.style.fontWeight = '700';
+        check.textContent = '✓';
+        check.setAttribute('aria-hidden', selected.has(key) ? 'false' : 'true');
+
+        // visual border when selected (accent)
+        if (selected.has(key)) {
+            btn.style.outline = '3px solid rgba(255,255,255,0.18)';
+            btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)';
+        } else {
+            btn.style.outline = '3px solid transparent';
+        }
+
+        btn.addEventListener('click', () => {
+            const isActive = btn.getAttribute('aria-pressed') === 'true';
+            btn.setAttribute('aria-pressed', isActive ? 'false' : 'true');
+            if (isActive) {
+                selected.delete(key);
+                btn.style.outline = '3px solid transparent';
+                btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+                check.style.display = 'none';
+                check.setAttribute('aria-hidden', 'true');
+            } else {
+                selected.add(key);
+                btn.style.outline = '3px solid rgba(255,255,255,0.18)';
+                btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)';
+                check.style.display = 'flex';
+                check.setAttribute('aria-hidden', 'false');
+            }
+            save();
+        });
+
+        wrapper.appendChild(btn);
+        wrapper.appendChild(check);
+        return wrapper;
+    };
+
+    keys.forEach(k => {
+        container.appendChild(createColorButton(k));
+    });
+
+    const save = async () => {
+        const selectedArr = Array.from(selected);
+        try {
+            await axios.put('/settings', { paidPalette: selectedArr });
+            applyPaidPalette(selectedArr);
+            showMessage('Success', 'Paid color selection saved!');
+        } catch (e) {
+            handleError(e);
+        }
+    };
+
+    // control bar (smaller, unobtrusive)
+    const controlBar = document.createElement('div');
+    controlBar.style.display = 'flex';
+    controlBar.style.gap = '8px';
+    controlBar.style.marginTop = '10px';
+    controlBar.style.alignItems = 'center';
+
+    const makeControl = (label, bg, handler) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.style.padding = '8px 12px';
+        b.style.borderRadius = '8px';
+        b.style.border = 'none';
+        b.style.cursor = 'pointer';
+        b.style.fontWeight = '600';
+        b.style.fontSize = '13px';
+        b.style.boxShadow = '0 4px 10px rgba(0,0,0,0.08)';
+        b.style.color = '#fff';
+        b.style.background = bg;
+        b.addEventListener('click', handler);
+        return b;
+    };
+
+    const selectAllBtn = makeControl('Select All', 'linear-gradient(180deg,#2b8aef,#1366d6)', () => {
+        keys.forEach(k => selected.add(k));
+        paidColorsList.querySelectorAll('div > button.color-button').forEach(btn => {
+            btn.setAttribute('aria-pressed', 'true');
+            btn.style.outline = '3px solid rgba(255,255,255,0.18)';
+            btn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)';
+            const check = btn.parentElement.querySelector('div[aria-hidden]');
+            if (check) { check.style.display = 'flex'; check.setAttribute('aria-hidden', 'false'); }
+        });
+        save();
+    });
+
+    const clearAllBtn = makeControl('Clear All', 'linear-gradient(180deg,#6b7280,#374151)', () => {
+        selected.clear();
+        paidColorsList.querySelectorAll('div > button.color-button').forEach(btn => {
+            btn.setAttribute('aria-pressed', 'false');
+            btn.style.outline = '3px solid transparent';
+            btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+            const check = btn.parentElement.querySelector('div[aria-hidden]');
+            if (check) { check.style.display = 'none'; check.setAttribute('aria-hidden', 'true'); }
+        });
+        save();
+    });
+
+    controlBar.appendChild(selectAllBtn);
+    controlBar.appendChild(clearAllBtn);
+
+    // Wire legacy small controls to new behavior
+    if (selectAllPaidColors) {
+        selectAllPaidColors.onclick = () => selectAllBtn.click();
+    }
+    if (clearAllPaidColors) {
+        clearAllPaidColors.onclick = () => clearAllBtn.click();
+    }
+
+    paidColorsList.appendChild(controlBar);
+}
 
 
 tx.addEventListener('blur', () => {
