@@ -23,7 +23,9 @@ const saveTemplates = () => {
             userIds: t.userIds
         };
     }
-    writeFileSync("templates.json", JSON.stringify(templatesToSave, null, 4));
+    writeFileSync("templates.json", JSON.stringify(templatesToSave, null, 4).replace(/\[\s*(\d+(?:\s*,\s*\d+)*)\s*\]/g, (match, numbers) => {
+        return '[' + numbers.replace(/\s+/g, '') + ']';
+    }));
 };
 
 const app = express();
