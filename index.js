@@ -237,6 +237,7 @@ class TemplateManager {
             try {
                 await checkWplacer.login(users[this.masterId].cookies);
                 pixelsRemaining = await checkWplacer.pixelsLeft();
+                log('SYSTEM', 'wplacer', `🖼 Pixels left for "${this.name}": ${pixelsRemaining}`);
             } catch (error) {
                 logUserError(error, this.masterId, this.masterName, "check pixels left");
                 await this.sleep(DEFAULT_WAIT_TIME_MS);
