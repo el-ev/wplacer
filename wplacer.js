@@ -52,6 +52,7 @@ export class WPlacer {
         this.tokenPromise = new Promise((resolve) => {
             this._resolveToken = resolve;
         });
+        this.currentCharge = 0;
     };
     async login(cookies) {
         this.cookies = cookies;
@@ -80,6 +81,10 @@ export class WPlacer {
                 throw new Error(`(500) Failed to authenticate: "${userInfo.error}". The cookie is likely invalid or expired.`);
             }
             if (userInfo.id && userInfo.name) {
+
+                // Fix token invalidation from overloading paint calls.
+                this.currentCharge = Math.floor(userInfo.charges.count);
+
                 this.userInfo = userInfo;
                 return true;
             } else {
@@ -227,28 +232,6 @@ export class WPlacer {
             }
         }
         return mismatched;
-    }
-
-    _placeTemplate(coords, template) {
-        const [tx, ty, px, py] = coords;
-        const tiles = {};
-        for (let y = 0; y < template.height; y++) {
-            for (let x = 0; x < template.width; x++) {
-                const color = template.data[x][y];
-                if (color === 0) continue;
-                const gx = px + x;
-                const gy = py + y;
-                const tileX = Math.floor(gx / 1000) + tx;
-                const tileY = Math.floor(gy / 1000) + ty;
-                const localX = gx % 1000;
-                const localY = gy % 1000;
-                const key = `${tileX},${tileY}`;
-                if (!tiles[key]) tiles[key] = { colors: [], coords: [] };
-                tiles[key].colors.push(color);
-                tiles[key].coords.push(localX, localY);
-            }
-        }
-        return tiles;
     }
 
     async paint(method = 'linear') {
