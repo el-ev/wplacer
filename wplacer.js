@@ -322,25 +322,33 @@ export class WPlacer {
                     break;
             }
 
-            const bodies = this._placeTemplate(this.coords, this.template);
+            const pixelsToPaint = mismatchedPixels.slice(0, Math.floor(this.userInfo.charges.count));
+            const bodiesByTile = pixelsToPaint.reduce((acc, p) => {
+                const key = `${p.tx}_${p.ty}`;
+                if (!acc[key]) acc[key] = { colors: [], coords: [] };
+                acc[key].colors.push(p.color);
+                acc[key].coords.push(p.px, p.py);
+                return acc;
+            }, {});
 
             let totalPainted = 0;
             let needsRetry = false;
-            for (const tileKey in bodies) {
-                const [tx, ty] = tileKey.split(',').map(Number);
-                const body = { ...bodies[tileKey], t: this.token };
+            for (const tileKey in bodiesByTile) {
+                const [tx, ty] = tileKey.split('_').map(Number);
+                const body = { ...bodiesByTile[tileKey], t: this.token };
                 const result = await this._executePaint(tx, ty, body);
 
-                if (result.success) totalPainted += result.painted;
-                else {
+                if (result.success) {
+                    totalPainted += result.painted;
+                } else {
                     needsRetry = true;
                     break;
-                };
-            };
+                }
+            }
 
             if (!needsRetry) return totalPainted;
-        };
-    };
+        }
+    }
 
     async buyProduct(productId, amount) {
         const response = await this.post(`https://backend.wplace.live/purchase`, { product: { id: productId, amount: amount } });
